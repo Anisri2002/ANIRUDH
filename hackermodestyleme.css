@@ -7,7 +7,7 @@
     display:inline-block;
     width:150px;
     position: relative;
-    cursor:pointer;
+    
     color:blue;
     background-color:yellow;
     border:2px solid black;
@@ -26,7 +26,7 @@
   margin:0px;
   padding:2px;
   font-size: 20px;
-  cursor:pointer;
+  
 }
 
 .scores{
@@ -81,7 +81,7 @@
   padding:26px 0px;
   font-size:40px;
   border:2px solid red;
-  cursor:pointer;
+
   }
   
  
