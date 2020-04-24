@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+ <head>
+   <meta name="viewport" content=" initial-scale=1.0">
+    <title>First page</title>
+    <link rel="stylesheet"
+          type="text/css"
+          href="hackermodestyleme.css">
+
+ </head>
+
+ <body onload="LoadNum();">
+
+   
+       <p style="color:green; font-size:20px;">CLICK ON A MODE TO START THE GAME.(BY DEFAULT IT IS IN EASY MODE). <span style="color:red;">TO VIEW SCORE CLICK ON A MODE AND THEN CLICK SCORE.</span></p> <br> 
+       <p class="heading">
+           MODES: <p></p> 
+       <p class="menuitem" onclick="LoadNum(40); resetTimer();">EASY</p>
+       <p class="menuitem" onclick="LoadNum(50); resetTimer();">MODERATE</p>
+       <p class="menuitem" onclick="LoadNum(60); resetTimer();">DIFFICULT</p>
+   </p>
+   <p class="heading" onclick="dispScores();"> SCORE :</p> 
+    <p id="scores" class="scores">
+
+    </p>
+   
+    <p id="Timertext"> TIMER : </p>
+    <p id="Timer">0.00</p>
+    
+    <div class="grid" id="master"></div>
+   
+
+ </body>
+
+ <script src="hackermodescriptme.js">
+ </script>
+
+</html>
