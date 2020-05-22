@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html> 
+ <head>
+     <title>Second Page</title>
+     <style>
+         body {margin:0px;}
+         #score{
+             display:inline-block;
+             position: absolute;;
+             top: 100px;
+             left:300px;
+             
+         }
+
+         #scoreItem{
+            display:inline-block;
+             position: absolute;;
+             top:130px;
+             left:350px;
+             font-size:25px;
+         }
+
+         #Hscore{
+            display:inline-block;            
+            position:absolute;
+             top: 250px;
+             left:300px;
+         }
+
+         #HscoreItem{
+            display:inline-block;
+             position: absolute;;
+             top:280px;
+             left:350px;
+             font-size:25px;
+         }
+         #start{
+             display:inline-block;
+             position: absolute;;
+             top:450px;
+             left: 350px;
+         }
+
+         
+     </style>
+ </head>
+  <body>
+      <p>Click START. Click inside the black box to make the ball bounce. Dont let the ball touch floor or mesh with different colored obstacle.</p>
+      <span id="score"> SCORE : </span>
+      <span id="scoreItem"></span>
+
+      <span id="Hscore">HIGH SCORE : </span>
+      <span id="HscoreItem"></span>
+
+      <canvas id="canvas" style="position:absolute; top:50px; left:450px; background-color:black; "> </canvas>
+      <button id="start" onclick = "gameArea.start(); ball.startGravi();">START</button>
+     
+  </body>
+  <script>
+     
+     var cnvs = document.getElementById("canvas");
+     var ctx = cnvs.getContext("2d");
+     cnvs.width=300;
+     cnvs.height=600;
+     cnvs.addEventListener("click",moveUp);
+     
+     var ball; 
+     var obstacle = [];
+     var gameArea = {
+         clear: function(){
+             
+              ctx.save();
+              ctx.fillStyle="rgba(0,0,0)";
+              ctx.fillRect(0,0,300,600);
+              ctx.restore();
+             },
+         start: function(){
+             ball = new MakeBall(500,"rgba(255,255,0)");
+             ball.draw();
+             populateObstacle();            
+             this.interval = setInterval(updateGameArea,20);
+             this.gameOn = 1;
+             setHighScore();
+            },
+         stop : function(){
+             clearInterval(this.interval);
+             this.gameOn = 0;
+             finScore = score;
+             setHighScore();
+            },
+         
+             
+     };
+
+     function randomColor(){
+         return "rgba(" + random(0,255) + "," + random(0,255) + "," + random(0,255) + ")" ;}
+     
+     function createGravity()
+     {
+        ball.y+=ball.gravitY;
+     }
+
+     function updateGameArea()
+     {
+        gameArea.clear();
+       // draw,angle updation,collision check, color check (inside for loop)
+        for(i=0;i<obstacle.length;i++)
+        {
+            obstacle[i].draw();
+            obstacle[i].angle += (1*(Math.PI/180)); 
+            var dist = Math.abs(ball.y-obstacle[i].obsY);
+            
+            if(dist>=45 && dist<=60)
+            {
+                if((ball.y-obstacle[i].obsY + 5)<obstacle[i].obsR){flg=0;} //flg=0 means ball is inside circle.
+                else{flg=1;}
+                checkColor(i);  
+                if(gameArea.gameOn == 1)
+                {
+                setScore(i+1);
+                }
+            }   
+        }
+        ball.rockBottom();
+        ball.draw();    
+       
+     }
+     
+     var score = 0;
+     var finScore = 0;
+     function setScore(x){
+         score=x;
+         dispScore();
+         console.log(score);
+     }
+
+     function dispScore(){
+         var scr = document.getElementById("scoreItem");
+         scr.innerHTML = score;
+         //setHighScore();
+     }
+
+     function setHighScore(){
+         if(!localStorage.hs)
+         {
+             localStorage.setItem("hs",finScore);
+         }
+         var currHS = parseInt(localStorage.getItem("hs"));
+         if(finScore>currHS)
+         {
+             localStorage.setItem("hs",finScore);
+         }
+         var d = document.getElementById("HscoreItem");
+         var hs = localStorage.getItem("hs");
+         d.innerHTML= hs ;
+     }
+
+
+     var flg ;
+     function checkColor(i)
+     {
+         console.log("called");
+         var arcColorDown = ctx.getImageData(obstacle[i].obsX , obstacle[i].obsY + obstacle[i].obsR , 1 , 1 );
+         var arcColorUp   = ctx.getImageData(obstacle[i].obsX , obstacle[i].obsY - obstacle[i].obsR , 1 , 1 );          
+         var dataDown = arcColorDown.data;
+         var dataUp = arcColorUp.data; 
+         var lowerArcColor = "rgba("+dataDown[0]+","+dataDown[1]+","+dataDown[2]+")";  
+         var upperArcColor = "rgba("+dataUp[0]+","+dataUp[1]+","+dataUp[2]+")";  
+         //console.log(lowerArcColor,ball.color,upperArcColor);
+         if(lowerArcColor!=ball.color && flg==1){gameArea.stop();} 
+         if(upperArcColor!=ball.color && flg==0){gameArea.stop();}                 
+     }
+
+     var MakeBall = function(y,color)
+     {
+         this.x = 150;
+         this.y = y;
+         this.velY = 3;
+        
+         this.gravitY = 3.5;
+         this.color = color;
+         this.draw = function(){
+            ctx.beginPath();
+            ctx.arc(this.x,this.y,5,0,2*Math.PI);
+            ctx.closePath();
+            ctx.fillStyle=this.color;
+            ctx.fill();
+         };    
+         this.rockBottom= ()=>{ 
+             if(ball.y>=(590)){ball.y=590;gameArea.stop();dispScore();}
+             
+         };
+         this.startGravi = function(){
+             this.gravi = setInterval(createGravity,40);
+         };
+         this.stopGravi = function(){
+             clearInterval(this.gravi);
+         };
+                      
+     };
+     
+    
+     function moveUp(){     //moves ball up and checks if obs is to be moved down.
+       if(ball.y<350)
+        {requestAnimationFrame(moveObs);}          
+       requestAnimationFrame(moveUpOnePx);        
+     }
+
+     var c1 = 0; //counter var for moveObs func
+     function moveObs(){  // moves obstacle down by 20 px if ball.y < 350 per click.
+        c1+=1;
+        for(i=0;i<obstacle.length;i++)
+        {
+            obstacle[i].obsY+=1;           
+        }
+        
+        let req = requestAnimationFrame(moveObs);
+        if(c1==20){cancelAnimationFrame(req);c1=0;}
+     }
+     
+     var counter = 0;    
+     function moveUpOnePx(){ 
+         counter+=1;
+         ball.y-=ball.velY; 
+        
+         //gameArea.clear();
+         //ball.draw(); 
+         var req = requestAnimationFrame(moveUpOnePx);   
+         if(counter>=15)
+         { cancelAnimationFrame(req);counter=0;}                  
+     }
+
+     function MakeObstacle(x,y,r,color){
+         this.obsX = x;
+         this.obsY = y;
+         this.obsR = r;
+         this.color = color; // the one another random colour.
+         this.angle = 0;
+         this.draw = function(){
+             ctx.save();
+             ctx.lineWidth = 10;
+             ctx.strokeStyle = this.color;
+             ctx.translate(this.obsX,this.obsY);
+             ctx.rotate(this.angle);
+             ctx.beginPath();
+             ctx.arc(0,0,this.obsR,-Math.PI/2,Math.PI/2);              
+             ctx.stroke();
+
+             ctx.strokeStyle = ball.color ; 
+             ctx.beginPath();
+             ctx.arc(0,0,this.obsR,Math.PI/2,-Math.PI/2);             
+             ctx.stroke();
+             ctx.restore();
+         };
+     }
+     
+     var iniY = 250; // position of first obstacle
+     function populateObstacle(){         
+         var tempObs;
+         for(i=0;i<200;i++)
+         {
+            tempObs = new MakeObstacle(150,iniY,50,randomColor());
+            obstacle.push(tempObs);
+            iniY-=200; 
+         }
+     }
+
+     function random(a,b){ // a- min value      b - max val (excluded)  
+         let y = a + Math.floor((Math.random())*(b-a));
+         return y;
+     }
+
+     
+  </script>
+</html>
